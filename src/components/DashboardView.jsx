@@ -1,37 +1,56 @@
 'use client';
 
-import { Box, Typography, Paper } from '@mui/material';
+import { Card, CardContent } from '@mui/material';
 
 export default function DashboardView({ user }) {
-  const role = user?.role;
-
-  const getTitle = () => {
-    switch (role) {
-      case 'admin':
-        return 'Welcome Admin - Full System Overview';
-      case 'finance':
-        return 'Welcome Finance Manager - Revenue & Invoices';
-      case 'accountant':
-        return 'Welcome Accountant - Invoice Control';
-      case 'viewer':
-        return 'Welcome Viewer - Read-Only Mode';
-      default:
-        return 'Welcome';
-    }
-  };
+  const role = user?.role?.toLowerCase();
 
   return (
-    <Box sx={{ p: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        {getTitle()}
-      </Typography>
+    <div style={{ padding: '2rem' }}>
+      <h1>Welcome, {user.name}</h1>
+      <p style={{ marginBottom: '2rem' }}>Role: {role}</p>
 
-      <Paper sx={{ p: 3, mt: 2 }}>
-        <Typography variant="body1">
-          This is the starting point for the <strong>{role}</strong> dashboard.
-          You can add widgets, analytics, charts, and action controls based on this role.
-        </Typography>
-      </Paper>
-    </Box>
+      {role === 'admin' && (
+        <div className="admin-dashboard">
+          <Widget title="User Management" description="View, add, or remove users." />
+          <Widget title="System Logs" description="Review system activity and logs." />
+          <Widget title="Company Reports" description="Access full reports and statistics." />
+        </div>
+      )}
+
+      {role === 'finance-manager' && (
+        <div className="finance-dashboard">
+          <Widget title="Financial Overview" description="Company-wide financial metrics." />
+          <Widget title="Budget Planning" description="View and manage budget allocations." />
+          <Widget title="Expense Approval" description="Approve or reject expenses." />
+        </div>
+      )}
+
+      {role === 'accountant' && (
+        <div className="accountant-dashboard">
+          <Widget title="Invoices" description="Generate and track invoices." />
+          <Widget title="Transactions" description="Manage incoming and outgoing payments." />
+          <Widget title="Reconciliation" description="Match bank statements with company records." />
+        </div>
+      )}
+
+      {role === 'viewer' && (
+        <div className="viewer-dashboard">
+          <Widget title="Company Summary" description="Read-only overview of key company data." />
+          <Widget title="Reports" description="Access financial and performance reports." />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Widget({ title, description }) {
+  return (
+    <Card style={{ marginBottom: '1rem', maxWidth: 600 }}>
+      <CardContent>
+        <h2 style={{ margin: 0 }}>{title}</h2>
+        <p>{description}</p>
+      </CardContent>
+    </Card>
   );
 }
