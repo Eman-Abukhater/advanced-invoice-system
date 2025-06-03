@@ -1,17 +1,20 @@
-import { ThemeContextProvider } from '@/context/ThemeContext';
+"use client";
 
-export const metadata = {
-  title: 'Advanced Invoice System',
-  description: 'Professional ERP Invoice App',
-};
+import { ThemeContextProvider } from '@/context/ThemeContext';
+import { SessionProvider } from "next-auth/react";
+
+
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>
+
+      <SessionProvider>
         <ThemeContextProvider>
           {children}
         </ThemeContextProvider>
+      </SessionProvider>
       </body>
     </html>
   );
