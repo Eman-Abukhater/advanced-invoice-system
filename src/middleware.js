@@ -9,5 +9,5 @@ export default withAuth({
 });
 
 export const config = {
-  matcher: ["/dashboard*"], // protect dashboard routes
+  matcher: ["/dashboard"], // protect dashboard routes
 };
