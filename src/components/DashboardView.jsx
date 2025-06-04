@@ -31,6 +31,9 @@ const DashboardView = ({ user }) => {
             <Grid item xs={12} sm={6} md={4}><LogsWidget /></Grid>
             <Grid item xs={12} sm={6}><InvoiceBreakdownWidget /></Grid>
             <Grid item xs={12} sm={6}><PaymentMethodsPieChart /></Grid>
+            <Grid item xs={12} sm={6}><MonthlyRevenueChart /></Grid>
+            <Grid item xs={12} sm={6}><PendingInvoicesWidget /></Grid>
+            
           </>
         )}
 
