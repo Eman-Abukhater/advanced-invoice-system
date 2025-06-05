@@ -12,6 +12,8 @@ import {
   TableHead,
   TableRow,
   Typography,
+  TextField,
+  MenuItem,
 } from "@mui/material";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
@@ -68,14 +70,15 @@ const InvoicePage = () => {
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
 
-  const toggleAll = () =>
-    setSelected((prev) => {
-      const filteredIds = filteredInvoices.map((i) => i.id);
-      const allSelected = filteredIds.every((id) => prev.includes(id));
-      return allSelected
+  const toggleAll = () => {
+    const filteredIds = filteredInvoices.map((i) => i.id);
+    const allSelected = filteredIds.every((id) => selected.includes(id));
+    setSelected((prev) =>
+      allSelected
         ? prev.filter((id) => !filteredIds.includes(id))
-        : [...new Set([...prev, ...filteredIds])];
-    });
+        : [...new Set([...prev, ...filteredIds])]
+    );
+  };
 
   if (isLoading) return <CircularProgress />;
 
@@ -288,7 +291,7 @@ const InvoicePage = () => {
           </TableRow>
         </TableHead>
         <TableBody>
-          {invoices.filteredInvoices((inv) => (
+          {filteredInvoices.map((inv) => (
             <TableRow key={inv.id}>
               <TableCell padding="checkbox">
                 <Checkbox

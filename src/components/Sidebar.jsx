@@ -2,15 +2,14 @@
 
 import Link from 'next/link';
 import { useSession, signOut } from 'next-auth/react';
-import { Box, Button, List, ListItem, ListItemText, Typography } from '@mui/material';
+import { Box, Button, List, ListItem, ListItemButton, ListItemText, Typography } from '@mui/material';
 
 const Sidebar = () => {
   const { data: session } = useSession();
-  const role = session?.user?.role;
 
   const links = [
     { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Create Invoice', href: '/dashboard/create-invoice'},
+    { label: 'Create Invoice', href: '/dashboard/create-invoice' },
     { label: 'Invoices', href: '/dashboard/invoices' },
   ];
 
@@ -21,8 +20,10 @@ const Sidebar = () => {
       </Typography>
       <List>
         {links.map((link) => (
-          <ListItem button component={Link} href={link.href} key={link.href}>
-            <ListItemText primary={link.label} />
+          <ListItem key={link.href} disablePadding>
+            <ListItemButton component={Link} href={link.href}>
+              <ListItemText primary={link.label} />
+            </ListItemButton>
           </ListItem>
         ))}
       </List>
