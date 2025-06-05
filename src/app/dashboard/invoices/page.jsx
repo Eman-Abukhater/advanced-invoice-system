@@ -1,127 +1,125 @@
 'use client';
 
-import { useState } from 'react';
-import { DataGrid } from '@mui/x-data-grid';
 import {
   Box,
   Button,
-  TextField,
-  Typography,
-  MenuItem,
+  Checkbox,
+  CircularProgress,
   Grid,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  Typography,
 } from '@mui/material';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'react-toastify';
+import { useState } from 'react';
+import {
+  fetchInvoices,
+  markInvoicesAsPaid,
+  deleteInvoices,
+} from '@/lib/mockAPI';
 
-const mockInvoices = [
-  { id: 1, client: 'Acme Corp', amount: 1200, dueDate: '2025-06-15', paymentMethod: 'Card', status: 'Paid' },
-  { id: 2, client: 'Beta LLC', amount: 850, dueDate: '2025-06-10', paymentMethod: 'Bank Transfer', status: 'Overdue' },
-  { id: 3, client: 'Delta Inc', amount: 450, dueDate: '2025-06-20', paymentMethod: 'Cash', status: 'Upcoming' },
-  { id: 4, client: 'Acme Corp', amount: 1600, dueDate: '2025-06-30', paymentMethod: 'Card', status: 'Upcoming' },
-];
+const InvoicePage = () => {
+  const queryClient = useQueryClient();
+  const [selected, setSelected] = useState([]);
 
-const columns = [
-  { field: 'id', headerName: 'ID', width: 70 },
-  { field: 'client', headerName: 'Client', flex: 1 },
-  { field: 'amount', headerName: 'Amount ($)', type: 'number', flex: 1 },
-  { field: 'dueDate', headerName: 'Due Date', flex: 1 },
-  { field: 'paymentMethod', headerName: 'Payment Method', flex: 1 },
-  {
-    field: 'status',
-    headerName: 'Status',
-    flex: 1,
-    renderCell: (params) => {
-      const colorMap = {
-        Paid: 'green',
-        Overdue: 'red',
-        Upcoming: 'orange',
-      };
-      return (
-        <span style={{ color: colorMap[params.value] || 'gray', fontWeight: 'bold' }}>
-          {params.value}
-        </span>
-      );
-    },
-  },
-];
-
-const InvoiceTablePage = () => {
-  const [clientFilter, setClientFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
-  const [minAmount, setMinAmount] = useState('');
-  const [maxAmount, setMaxAmount] = useState('');
-
-  const filteredInvoices = mockInvoices.filter((invoice) => {
-    const matchesClient = invoice.client.toLowerCase().includes(clientFilter.toLowerCase());
-    const matchesStatus = statusFilter ? invoice.status === statusFilter : true;
-    const matchesMinAmount = minAmount ? invoice.amount >= parseFloat(minAmount) : true;
-    const matchesMaxAmount = maxAmount ? invoice.amount <= parseFloat(maxAmount) : true;
-    return matchesClient && matchesStatus && matchesMinAmount && matchesMaxAmount;
+  const { data: invoices = [], isLoading } = useQuery({
+    queryKey: ['invoices'],
+    queryFn: fetchInvoices,
   });
 
-  return (
-    <Box p={3}>
-      <Typography variant="h4" mb={2}>
-        Invoice Management
-      </Typography>
+  const markAsPaid = useMutation({
+    mutationFn: markInvoicesAsPaid,
+    onSuccess: () => {
+      toast.success('Invoices marked as paid');
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      setSelected([]);
+    },
+  });
 
-      {/* Filters */}
+  const deleteInvs = useMutation({
+    mutationFn: deleteInvoices,
+    onSuccess: () => {
+      toast.success('Invoices deleted');
+      queryClient.invalidateQueries({ queryKey: ['invoices'] });
+      setSelected([]);
+    },
+  });
+
+  const toggle = (id) =>
+    setSelected((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
+
+  const toggleAll = () =>
+    setSelected((prev) => (prev.length === invoices.length ? [] : invoices.map((i) => i.id)));
+
+  if (isLoading) return <CircularProgress />;
+
+  return (
+    <Box p={4}>
+      <Typography variant="h4" mb={2}>Invoices</Typography>
+
       <Grid container spacing={2} mb={2}>
-        <Grid item xs={12} sm={3}>
-          <TextField
-            fullWidth
-            label="Filter by Client"
-            value={clientFilter}
-            onChange={(e) => setClientFilter(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12} sm={3}>
-          <TextField
-            select
-            fullWidth
-            label="Status"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+        <Grid item>
+          <Button
+            variant="contained"
+            color="success"
+            onClick={() => markAsPaid.mutate(selected)}
+            disabled={selected.length === 0}
           >
-            <MenuItem value="">All</MenuItem>
-            <MenuItem value="Paid">Paid</MenuItem>
-            <MenuItem value="Overdue">Overdue</MenuItem>
-            <MenuItem value="Upcoming">Upcoming</MenuItem>
-          </TextField>
+            Mark as Paid
+          </Button>
         </Grid>
-        <Grid item xs={12} sm={3}>
-          <TextField
-            fullWidth
-            label="Min Amount"
-            type="number"
-            value={minAmount}
-            onChange={(e) => setMinAmount(e.target.value)}
-          />
-        </Grid>
-        <Grid item xs={12} sm={3}>
-          <TextField
-            fullWidth
-            label="Max Amount"
-            type="number"
-            value={maxAmount}
-            onChange={(e) => setMaxAmount(e.target.value)}
-          />
+        <Grid item>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => deleteInvs.mutate(selected)}
+            disabled={selected.length === 0}
+          >
+            Delete
+          </Button>
         </Grid>
       </Grid>
 
-      <Box mb={2}>
-        <Button variant="contained" color="primary">
-          + Create Invoice
-        </Button>
-      </Box>
-
-      <DataGrid
-        rows={filteredInvoices}
-        columns={columns}
-        pageSize={5}
-        rowsPerPageOptions={[5]}
-        autoHeight
-      />
+      <Table>
+        <TableHead>
+          <TableRow>
+            <TableCell padding="checkbox">
+              <Checkbox
+                checked={selected.length === invoices.length}
+                onChange={toggleAll}
+              />
+            </TableCell>
+            <TableCell>Client</TableCell>
+            <TableCell>Amount</TableCell>
+            <TableCell>Status</TableCell>
+            <TableCell>Due Date</TableCell>
+            <TableCell>Payment Method</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {invoices.map((inv) => (
+            <TableRow key={inv.id}>
+              <TableCell padding="checkbox">
+                <Checkbox
+                  checked={selected.includes(inv.id)}
+                  onChange={() => toggle(inv.id)}
+                />
+              </TableCell>
+              <TableCell>{inv.client}</TableCell>
+              <TableCell>${inv.amount}</TableCell>
+              <TableCell>{inv.status}</TableCell>
+              <TableCell>{inv.dueDate}</TableCell>
+              <TableCell>{inv.paymentMethod}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </Box>
   );
 };
 
-export default InvoiceTablePage;
+export default InvoicePage;
