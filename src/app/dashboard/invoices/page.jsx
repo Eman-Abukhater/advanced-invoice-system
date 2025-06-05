@@ -26,6 +26,17 @@ import {
 import { exportInvoicesToCSV, exportInvoicesToPDF } from "@/lib/exportUtils";
 
 const InvoicePage = () => {
+  // State to manage filters
+  const [filters, setFilters] = useState({
+    client: '',
+    minAmount: '',
+    maxAmount: '',
+    dueDateFrom: '',
+    dueDateTo: '',
+    paymentMethod: '',
+    status: '',
+  });
+  
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState([]);
 
