@@ -10,7 +10,8 @@ const Sidebar = () => {
 
   const links = [
     { label: 'Dashboard', href: '/dashboard' },
-    { label: 'Create Invoice', href: '/dashboard/create-invoice' },
+    { label: 'Create Invoice', href: '/dashboard/create-invoice'},
+    { label: 'Invoices', href: '/dashboard/invoices' },
   ];
 
   return (
