@@ -9,7 +9,7 @@ const mockData = {
 
 const InvoiceBreakdownWidget = () => {
   return (
-    <WidgetCard title="Invoice Breakdown" color="grey">
+    <WidgetCard title="Invoice Breakdown" >
       <Grid container spacing={2}>
         <Grid item xs={4}>
           <Typography variant="body1" color="green">Paid</Typography>
