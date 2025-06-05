@@ -68,18 +68,17 @@ const InvoicePage = () => {
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
 
-    const toggleAll = () =>
-      setSelected((prev) => {
-        const filteredIds = filteredInvoices.map((i) => i.id);
-        const allSelected = filteredIds.every((id) => prev.includes(id));
-        return allSelected
-          ? prev.filter((id) => !filteredIds.includes(id))
-          : [...new Set([...prev, ...filteredIds])];
-      });
-    
+  const toggleAll = () =>
+    setSelected((prev) => {
+      const filteredIds = filteredInvoices.map((i) => i.id);
+      const allSelected = filteredIds.every((id) => prev.includes(id));
+      return allSelected
+        ? prev.filter((id) => !filteredIds.includes(id))
+        : [...new Set([...prev, ...filteredIds])];
+    });
 
   if (isLoading) return <CircularProgress />;
-  
+
   // Filter invoices based on the selected filters
   const filteredInvoices = invoices.filter((inv) => {
     const {
@@ -91,25 +90,25 @@ const InvoicePage = () => {
       paymentMethod,
       status,
     } = filters;
-  
+
     const matchesClient =
       !client || inv.client.toLowerCase().includes(client.toLowerCase());
-  
+
     const matchesMinAmount = !minAmount || inv.amount >= parseFloat(minAmount);
-  
+
     const matchesMaxAmount = !maxAmount || inv.amount <= parseFloat(maxAmount);
-  
+
     const matchesDueDateFrom =
       !dueDateFrom || new Date(inv.dueDate) >= new Date(dueDateFrom);
-  
+
     const matchesDueDateTo =
       !dueDateTo || new Date(inv.dueDate) <= new Date(dueDateTo);
-  
+
     const matchesPaymentMethod =
       !paymentMethod || inv.paymentMethod === paymentMethod;
-  
+
     const matchesStatus = !status || inv.status === status;
-  
+
     return (
       matchesClient &&
       matchesMinAmount &&
@@ -120,8 +119,6 @@ const InvoicePage = () => {
       matchesStatus
     );
   });
-  
-
 
   return (
     <Box p={4}>
@@ -276,10 +273,10 @@ const InvoicePage = () => {
           <TableRow>
             <TableCell padding="checkbox">
               <Checkbox
-checked={
-  filteredInvoices.length > 0 &&
-  filteredInvoices.every((inv) => selected.includes(inv.id))
-}
+                checked={
+                  filteredInvoices.length > 0 &&
+                  filteredInvoices.every((inv) => selected.includes(inv.id))
+                }
                 onChange={toggleAll}
               />
             </TableCell>
