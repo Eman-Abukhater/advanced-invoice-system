@@ -28,15 +28,15 @@ import { exportInvoicesToCSV, exportInvoicesToPDF } from "@/lib/exportUtils";
 const InvoicePage = () => {
   // State to manage filters
   const [filters, setFilters] = useState({
-    client: '',
-    minAmount: '',
-    maxAmount: '',
-    dueDateFrom: '',
-    dueDateTo: '',
-    paymentMethod: '',
-    status: '',
+    client: "",
+    minAmount: "",
+    maxAmount: "",
+    dueDateFrom: "",
+    dueDateTo: "",
+    paymentMethod: "",
+    status: "",
   });
-  
+
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState([]);
 
@@ -80,6 +80,95 @@ const InvoicePage = () => {
       <Typography variant="h4" mb={2}>
         Invoices
       </Typography>
+
+      {/*  Filter Section */}
+      <Grid container spacing={2} mb={2}>
+        <Grid item xs={12} sm={4} md={3}>
+          <TextField
+            label="Client"
+            fullWidth
+            value={filters.client}
+            onChange={(e) => setFilters({ ...filters, client: e.target.value })}
+          />
+        </Grid>
+        <Grid item xs={6} sm={2}>
+          <TextField
+            label="Min Amount"
+            type="number"
+            value={filters.minAmount}
+            onChange={(e) =>
+              setFilters({ ...filters, minAmount: e.target.value })
+            }
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={6} sm={2}>
+          <TextField
+            label="Max Amount"
+            type="number"
+            value={filters.maxAmount}
+            onChange={(e) =>
+              setFilters({ ...filters, maxAmount: e.target.value })
+            }
+            fullWidth
+          />
+        </Grid>
+        <Grid item xs={6} sm={2}>
+          <TextField
+            label="Due Date From"
+            type="date"
+            value={filters.dueDateFrom}
+            onChange={(e) =>
+              setFilters({ ...filters, dueDateFrom: e.target.value })
+            }
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+          />
+        </Grid>
+        <Grid item xs={6} sm={2}>
+          <TextField
+            label="Due Date To"
+            type="date"
+            value={filters.dueDateTo}
+            onChange={(e) =>
+              setFilters({ ...filters, dueDateTo: e.target.value })
+            }
+            fullWidth
+            InputLabelProps={{ shrink: true }}
+          />
+        </Grid>
+        <Grid item xs={6} sm={2}>
+          <TextField
+            select
+            label="Payment Method"
+            value={filters.paymentMethod}
+            onChange={(e) =>
+              setFilters({ ...filters, paymentMethod: e.target.value })
+            }
+            fullWidth
+          >
+            <MenuItem value="">All</MenuItem>
+            <MenuItem value="Card">Card</MenuItem>
+            <MenuItem value="Bank Transfer">Bank Transfer</MenuItem>
+            <MenuItem value="Cash">Cash</MenuItem>
+          </TextField>
+        </Grid>
+        <Grid item xs={6} sm={2}>
+          <TextField
+            select
+            label="Status"
+            value={filters.status}
+            onChange={(e) => setFilters({ ...filters, status: e.target.value })}
+            fullWidth
+          >
+            <MenuItem value="">All</MenuItem>
+            <MenuItem value="Draft">Draft</MenuItem>
+            <MenuItem value="Sent">Sent</MenuItem>
+            <MenuItem value="Paid">Paid</MenuItem>
+            <MenuItem value="Overdue">Overdue</MenuItem>
+          </TextField>
+        </Grid>
+      </Grid>
 
       <Grid container spacing={2} mb={2}>
         <Grid item>
