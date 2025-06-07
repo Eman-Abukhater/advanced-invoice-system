@@ -27,6 +27,9 @@ import {
 // Importing utility functions for exporting invoices
 import { exportInvoicesToCSV, exportInvoicesToPDF } from "@/lib/exportUtils";
 
+// Importing Drag and Drop components
+import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+
 const InvoicePage = () => {
   // State to manage filters
   const [filters, setFilters] = useState({
@@ -41,11 +44,26 @@ const InvoicePage = () => {
 
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState([]);
+  // Columns for the invoice table
+  const [columns, setColumns] = useState([
+    { id: "client", label: "Client" },
+    { id: "amount", label: "Amount" },
+    { id: "status", label: "Status" },
+    { id: "dueDate", label: "Due Date" },
+    { id: "paymentMethod", label: "Payment Method" },
+  ]);
 
   const { data: invoices = [], isLoading } = useQuery({
     queryKey: ["invoices"],
     queryFn: fetchInvoices,
   });
+  const handleDragEnd = (result) => {
+    if (!result.destination) return;
+    const reordered = Array.from(columns);
+    const [moved] = reordered.splice(result.source.index, 1);
+    reordered.splice(result.destination.index, 0, moved);
+    setColumns(reordered);
+  };
 
   const markAsPaid = useMutation({
     mutationFn: markInvoicesAsPaid,
@@ -272,24 +290,43 @@ const InvoicePage = () => {
       </Grid>
 
       <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell padding="checkbox">
-              <Checkbox
-                checked={
-                  filteredInvoices.length > 0 &&
-                  filteredInvoices.every((inv) => selected.includes(inv.id))
-                }
-                onChange={toggleAll}
-              />
-            </TableCell>
-            <TableCell>Client</TableCell>
-            <TableCell>Amount</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell>Due Date</TableCell>
-            <TableCell>Payment Method</TableCell>
-          </TableRow>
-        </TableHead>
+        <DragDropContext onDragEnd={handleDragEnd}>
+          <Droppable droppableId="columns" direction="horizontal" type="column">
+            {(provided) => (
+              <TableHead ref={provided.innerRef} {...provided.droppableProps}>
+                <TableRow>
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={
+                        filteredInvoices.length > 0 &&
+                        filteredInvoices.every((inv) =>
+                          selected.includes(inv.id)
+                        )
+                      }
+                      onChange={toggleAll}
+                    />
+                  </TableCell>
+
+                  {columns.map((col, index) => (
+                    <Draggable draggableId={col.id} index={index} key={col.id}>
+                      {(provided) => (
+                        <TableCell
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                        >
+                          {col.label}
+                        </TableCell>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
+                </TableRow>
+              </TableHead>
+            )}
+          </Droppable>
+        </DragDropContext>
+
         <TableBody>
           {filteredInvoices.map((inv) => (
             <TableRow key={inv.id}>
@@ -299,11 +336,9 @@ const InvoicePage = () => {
                   onChange={() => toggle(inv.id)}
                 />
               </TableCell>
-              <TableCell>{inv.client}</TableCell>
-              <TableCell>${inv.amount}</TableCell>
-              <TableCell>{inv.status}</TableCell>
-              <TableCell>{inv.dueDate}</TableCell>
-              <TableCell>{inv.paymentMethod}</TableCell>
+              {columns.map((col) => (
+                <TableCell key={col.id}>{inv[col.id]}</TableCell>
+              ))}
             </TableRow>
           ))}
         </TableBody>
