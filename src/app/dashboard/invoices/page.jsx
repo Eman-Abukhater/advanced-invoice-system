@@ -306,7 +306,6 @@ const InvoicePage = () => {
                       onChange={toggleAll}
                     />
                   </TableCell>
-
                   {columns.map((col, index) => (
                     <Draggable draggableId={col.id} index={index} key={col.id}>
                       {(provided) => (
@@ -320,7 +319,9 @@ const InvoicePage = () => {
                       )}
                     </Draggable>
                   ))}
-                  {provided.placeholder}
+                  {/* Action header */}
+                  <TableCell>Actions</TableCell>
+                  {provided.placeholder}{" "}
                 </TableRow>
               </TableHead>
             )}
@@ -339,6 +340,16 @@ const InvoicePage = () => {
               {columns.map((col) => (
                 <TableCell key={col.id}>{inv[col.id]}</TableCell>
               ))}
+              {/* Add View Button */}
+              <TableCell>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  href={`/dashboard/invoices/${inv.id}`}
+                >
+                  View
+                </Button>
+              </TableCell>
             </TableRow>
           ))}
         </TableBody>
