@@ -51,6 +51,7 @@ const InvoicePage = () => {
     { id: "status", label: "Status" },
     { id: "dueDate", label: "Due Date" },
     { id: "paymentMethod", label: "Payment Method" },
+    { id: "actions", label: "Actions" },
   ]);
 
   const { data: invoices = [], isLoading } = useQuery({
@@ -319,9 +320,7 @@ const InvoicePage = () => {
                       )}
                     </Draggable>
                   ))}
-                  {/* Action header */}
-                  <TableCell>Actions</TableCell>
-                  {provided.placeholder}{" "}
+                  {provided.placeholder}
                 </TableRow>
               </TableHead>
             )}
