@@ -1,25 +1,36 @@
-import { Box, Typography } from "@mui/material";
-import { fetchInvoices } from "@/lib/mockAPI";
+// pages/invoices/[id].js
+import { useRouter } from "next/router";
+import { useEffect, useState } from "react";
+import { fetchInvoices } from "@/mock/invoiceService";
+import InvoicePreview from "@/components/InvoiceDetail/InvoicePreview";
+import ActivityLog from "@/components/InvoiceDetail/ActivityLog";
+import StatusTracker from "@/components/InvoiceDetail/StatusTracker";
+import PrintButton from "@/components/InvoiceDetail/PrintButton";
 
-export default async function InvoiceDetailPage({ params }) {
-  const { id } = params;
-  const invoices = await fetchInvoices();
-  const invoice = invoices.find((inv) => inv.id === id);
+export default function InvoiceDetailPage() {
+  const router = useRouter();
+  const { id } = router.query;
+  const [invoice, setInvoice] = useState(null);
 
-  if (!invoice) {
-    return <Typography variant="h6">Invoice not found.</Typography>;
-  }
+  useEffect(() => {
+    fetchInvoices().then((data) => {
+      const found = data.find((inv) => inv.id === parseInt(id));
+      setInvoice(found);
+    });
+  }, [id]);
+
+  if (!invoice) return <div>Loading...</div>;
 
   return (
-    <Box p={4}>
-      <Typography variant="h4" mb={2}>
-        Invoice Detail - #{invoice.id}
-      </Typography>
-      <Typography><strong>Client:</strong> {invoice.client}</Typography>
-      <Typography><strong>Amount:</strong> ${invoice.amount}</Typography>
-      <Typography><strong>Status:</strong> {invoice.status}</Typography>
-      <Typography><strong>Due Date:</strong> {invoice.dueDate}</Typography>
-      <Typography><strong>Payment Method:</strong> {invoice.paymentMethod}</Typography>
-    </Box>
+    <div className="p-6 max-w-4xl mx-auto bg-white shadow-md print:shadow-none print:p-0">
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-2xl font-bold">Invoice #{invoice.id}</h1>
+        <PrintButton />
+      </div>
+
+      <StatusTracker status={invoice.status} />
+      <InvoicePreview invoice={invoice} />
+      <ActivityLog invoice={invoice} />
+    </div>
   );
 }
