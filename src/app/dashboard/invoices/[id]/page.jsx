@@ -1,18 +1,21 @@
-// pages/invoices/[id].js
-import { useRouter } from "next/router";
+"use client";
+
+import { useParams } from "next/navigation"; // ✅ Fix: useParams instead of useRouter
 import { useEffect, useState } from "react";
-import { fetchInvoices } from "@/mock/invoiceService";
-import InvoicePreview from "@/components/InvoiceDetail/InvoicePreview";
-import ActivityLog from "@/components/InvoiceDetail/ActivityLog";
-import StatusTracker from "@/components/InvoiceDetail/StatusTracker";
-import PrintButton from "@/components/InvoiceDetail/PrintButton";
+import { fetchInvoices } from "@/lib/mockAPI";
+import InvoicePreview from "@/components/invoice/InvoicePreview";
+import ActivityLog from "@/components/invoice/ActivityLog";
+import StatusTracker from "@/components/invoice/StatusTracker";
+import PrintButton from "@/components/invoice/PrintButton";
 
 export default function InvoiceDetailPage() {
-  const router = useRouter();
-  const { id } = router.query;
+  const params = useParams(); // ✅
+  const id = params.id; // ✅ Extract `id` from params
   const [invoice, setInvoice] = useState(null);
 
   useEffect(() => {
+    if (!id) return;
+
     fetchInvoices().then((data) => {
       const found = data.find((inv) => inv.id === parseInt(id));
       setInvoice(found);
