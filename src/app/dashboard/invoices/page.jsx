@@ -14,24 +14,21 @@ import {
   Typography,
   TextField,
   MenuItem,
+  Chip,
 } from "@mui/material";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import { useState } from "react";
+import dayjs from "dayjs";
 import {
   fetchInvoices,
   markInvoicesAsPaid,
   deleteInvoices,
 } from "@/lib/mockAPI";
-
-// Importing utility functions for exporting invoices
 import { exportInvoicesToCSV, exportInvoicesToPDF } from "@/lib/exportUtils";
-
-// Importing Drag and Drop components
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 
 const InvoicePage = () => {
-  // State to manage filters
   const [filters, setFilters] = useState({
     client: "",
     minAmount: "",
@@ -44,20 +41,19 @@ const InvoicePage = () => {
 
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState([]);
-  // Columns for the invoice table
   const [columns, setColumns] = useState([
     { id: "client", label: "Client" },
     { id: "amount", label: "Amount" },
     { id: "status", label: "Status" },
     { id: "dueDate", label: "Due Date" },
     { id: "paymentMethod", label: "Payment Method" },
-    { }
   ]);
 
   const { data: invoices = [], isLoading } = useQuery({
     queryKey: ["invoices"],
     queryFn: fetchInvoices,
   });
+
   const handleDragEnd = (result) => {
     if (!result.destination) return;
     const reordered = Array.from(columns);
@@ -101,8 +97,17 @@ const InvoicePage = () => {
 
   if (isLoading) return <CircularProgress />;
 
-  // Filter invoices based on the selected filters
-  const filteredInvoices = invoices.filter((inv) => {
+  // Add computed overdue status
+  const processedInvoices = invoices.map((inv) => {
+    const isOverdue =
+      inv.status !== "Paid" && dayjs(inv.dueDate).isBefore(dayjs(), "day");
+    return {
+      ...inv,
+      status: isOverdue ? "Overdue" : inv.status,
+    };
+  });
+
+  const filteredInvoices = processedInvoices.filter((inv) => {
     const {
       client,
       minAmount,
@@ -117,14 +122,12 @@ const InvoicePage = () => {
       !client || inv.client.toLowerCase().includes(client.toLowerCase());
 
     const matchesMinAmount = !minAmount || inv.amount >= parseFloat(minAmount);
-
     const matchesMaxAmount = !maxAmount || inv.amount <= parseFloat(maxAmount);
 
     const matchesDueDateFrom =
-      !dueDateFrom || new Date(inv.dueDate) >= new Date(dueDateFrom);
-
+      !dueDateFrom || dayjs(inv.dueDate).isAfter(dayjs(dueDateFrom).subtract(1, 'day'));
     const matchesDueDateTo =
-      !dueDateTo || new Date(inv.dueDate) <= new Date(dueDateTo);
+      !dueDateTo || dayjs(inv.dueDate).isBefore(dayjs(dueDateTo).add(1, 'day'));
 
     const matchesPaymentMethod =
       !paymentMethod || inv.paymentMethod === paymentMethod;
@@ -141,6 +144,21 @@ const InvoicePage = () => {
       matchesStatus
     );
   });
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case "Draft":
+        return "default";
+      case "Sent":
+        return "primary";
+      case "Paid":
+        return "success";
+      case "Overdue":
+        return "error";
+      default:
+        return "default";
+    }
+  };
 
   return (
     <Box p={4}>
@@ -290,6 +308,7 @@ const InvoicePage = () => {
         </Grid>
       </Grid>
 
+      {/* Table */}
       <Table>
         <DragDropContext onDragEnd={handleDragEnd}>
           <Droppable droppableId="columns" direction="horizontal" type="column">
@@ -320,9 +339,8 @@ const InvoicePage = () => {
                       )}
                     </Draggable>
                   ))}
-                  {/* Action header */}
                   <TableCell>Actions</TableCell>
-                  {provided.placeholder}{" "}
+                  {provided.placeholder}
                 </TableRow>
               </TableHead>
             )}
@@ -339,9 +357,19 @@ const InvoicePage = () => {
                 />
               </TableCell>
               {columns.map((col) => (
-                <TableCell key={col.id}>{inv[col.id]}</TableCell>
+                <TableCell key={col.id}>
+                  {col.id === "status" ? (
+                    <Chip
+                      label={inv.status}
+                      color={getStatusColor(inv.status)}
+                      variant="outlined"
+                      size="small"
+                    />
+                  ) : (
+                    inv[col.id]
+                  )}
+                </TableCell>
               ))}
-              {/* Add View Button */}
               <TableCell>
                 <Button
                   variant="outlined"
