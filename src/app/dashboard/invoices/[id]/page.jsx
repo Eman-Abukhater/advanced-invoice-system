@@ -1,6 +1,6 @@
 "use client";
 
-import { useParams } from "next/navigation"; // ✅ Fix: useParams instead of useRouter
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { fetchInvoices } from "@/lib/mockAPI";
 import InvoicePreview from "@/components/invoice/InvoicePreview";
@@ -8,9 +8,17 @@ import ActivityLog from "@/components/invoice/ActivityLog";
 import StatusTracker from "@/components/invoice/StatusTracker";
 import PrintButton from "@/components/invoice/PrintButton";
 
+import {
+  Box,
+  Container,
+  Typography,
+  Paper,
+  Divider,
+  Skeleton,
+} from "@mui/material";
+
 export default function InvoiceDetailPage() {
-  const params = useParams(); // ✅
-  const id = params.id; // ✅ Extract `id` from params
+  const { id } = useParams();
   const [invoice, setInvoice] = useState(null);
 
   useEffect(() => {
@@ -22,18 +30,65 @@ export default function InvoiceDetailPage() {
     });
   }, [id]);
 
-  if (!invoice) return <div>Loading...</div>;
+  if (!invoice) {
+    return (
+      <Container maxWidth="md" sx={{ py: 6 }}>
+        <Skeleton height={40} width="40%" />
+        <Skeleton height={200} sx={{ my: 2 }} />
+        <Skeleton height={150} />
+      </Container>
+    );
+  }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto bg-white shadow-md print:shadow-none print:p-0">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Invoice #{invoice.id}</h1>
+    <Container
+      maxWidth="md"
+      sx={{
+        py: 4,
+        printColorAdjust: "exact",
+        "@media print": {
+          boxShadow: "none",
+          padding: 0,
+          backgroundColor: "#fff",
+        },
+      }}
+    >
+      {/* Header */}
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mb={3}
+      >
+        <Box>
+          <Typography variant="h4" fontWeight="bold">
+            Invoice #{invoice.id}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Date: {invoice.date}
+          </Typography>
+        </Box>
         <PrintButton />
-      </div>
+      </Box>
 
-      <StatusTracker status={invoice.status} />
-      <InvoicePreview invoice={invoice} />
-      <ActivityLog invoice={invoice} />
-    </div>
+      {/* Status Tracker */}
+      <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
+        <StatusTracker status={invoice.status} />
+      </Paper>
+
+      {/* Invoice Preview */}
+      <Paper variant="outlined" sx={{ p: 3, mb: 3 }}>
+        <InvoicePreview invoice={invoice} />
+      </Paper>
+
+      {/* Activity Log */}
+      <Paper variant="outlined" sx={{ p: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          Activity Log
+        </Typography>
+        <Divider sx={{ mb: 2 }} />
+        <ActivityLog invoice={invoice} />
+      </Paper>
+    </Container>
   );
 }

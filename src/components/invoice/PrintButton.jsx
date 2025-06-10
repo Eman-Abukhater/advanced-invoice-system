@@ -8,7 +8,7 @@ export default function PrintButton() {
       color="primary"
       startIcon={<PrintIcon />}
       onClick={() => window.print()}
-      sx={{ displayPrint: "none" }}
+      sx={{ displayPrint: "none" , mb: 2, }}
     >
       Print
     </Button>
