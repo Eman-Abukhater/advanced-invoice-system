@@ -7,6 +7,7 @@ import InvoicePreview from "@/components/invoice/InvoicePreview";
 import ActivityLog from "@/components/invoice/ActivityLog";
 import StatusTracker from "@/components/invoice/StatusTracker";
 import PrintButton from "@/components/invoice/PrintButton";
+import dayjs from "dayjs"; 
 
 import {
   Box,
@@ -26,7 +27,20 @@ export default function InvoiceDetailPage() {
 
     fetchInvoices().then((data) => {
       const found = data.find((inv) => inv.id === parseInt(id));
-      setInvoice(found);
+
+      if (found) {
+        //  Add Overdue check logic
+        const isPastDue =
+          found.status === "Sent" &&
+          found.dueDate &&
+          dayjs().isAfter(dayjs(found.dueDate));
+
+        if (isPastDue) {
+          found.status = "Overdue";
+        }
+
+        setInvoice(found);
+      }
     });
   }, [id]);
 
@@ -65,7 +79,7 @@ export default function InvoiceDetailPage() {
             Invoice #{invoice.id}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Date: {invoice.date}
+            Date: {invoice.dueDate}
           </Typography>
         </Box>
         <PrintButton />
