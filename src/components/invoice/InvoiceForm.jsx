@@ -29,10 +29,12 @@ const defaultValues = {
     address: "",
   },
   items: [{ name: "", quantity: 1, price: 0 }],
-  payment: {
-    terms: "",
-  },
   attachments: [],
+  payment: {
+    dueDate: "",
+    method: "",
+  },
+  
 };
 
 const validationSchema = [
@@ -54,7 +56,7 @@ const validationSchema = [
   }),
   Yup.object({
     payment: Yup.object({
-      terms: Yup.string().required("Please select terms"),
+      method: Yup.string().required("Please select method"),
     }),
     attachments: Yup.array().of(Yup.string().url()),
   }),
@@ -88,27 +90,47 @@ export default function InvoiceForm({ mode = "create", initialData = null }) {
     }
   };
 
-  const handleFinalSubmit = (action) => {
-    trigger().then((isValid) => {
-      if (!isValid) return;
-
-      const data = getValues();
-      console.log("Final Invoice Data:", data);
-
-      if (action === "draft") {
-        toast.success("Saved as Draft");
-      } else if (action === "send") {
-        toast.success("Invoice Sent Successfully");
-      }
-    });
+  const handleFinalSubmit = async (action) => {
+    const isValid = await trigger();
+    if (!isValid) return;
+  
+    const data = getValues();
+    const userName = session?.user?.name || "Unknown User";
+  
+    const items = data.items;
+    const amount = items.reduce((sum, item) => sum + item.quantity * item.price, 0);
+  
+    const newInvoice = {
+      client: data.clientInfo?.name || "Unnamed Client",
+      amount,
+      status: action === "draft" ? "Draft" : "Sent",
+      dueDate: data.payment?.dueDate || new Date().toISOString().split("T")[0],
+      paymentMethod: data.payment?.method || "N/A",
+      createdBy: userName,
+      createdAt: new Date().toISOString(),
+      updatedBy: userName,
+      updatedAt: new Date().toISOString(),
+      sentAt: action === "send" ? new Date().toISOString() : null,
+    };
+  
+    try {
+      await createInvoice(newInvoice);
+      toast.success(`Invoice ${action === "draft" ? "saved as draft" : "sent"} successfully!`);
+      methods.reset(defaultValues);
+    } catch (error) {
+      console.error("Error creating invoice:", error);
+      toast.error("Something went wrong!");
+    }
   };
+  
+  
   const handleDownloadPDF = () => {
     const doc = new jsPDF();
     const data = getValues();
   
     const { name, email, address } = data.clientInfo;
     const items = data.items;
-    const terms = data.payment?.terms || "";
+    const method = data.payment?.method || "";
     const today = new Date().toLocaleDateString();
   
     // Title
@@ -147,7 +169,7 @@ export default function InvoiceForm({ mode = "create", initialData = null }) {
   
     // Total & Terms
     const finalY = doc.lastAutoTable.finalY || 80;
-    doc.text(`Payment Terms: ${terms}`, 14, finalY + 10);
+    doc.text(`Payment Method: ${method}`, 14, finalY + 10);
     doc.text(`Total: $${total.toFixed(2)}`, 14, finalY + 20);
   
     doc.save("invoice.pdf");

@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import {
   Box,
@@ -10,9 +10,9 @@ import {
   Stack,
   CircularProgress,
   Link,
-} from '@mui/material';
-import { useState } from 'react';
-import { useFormContext } from 'react-hook-form';
+} from "@mui/material";
+import { useState } from "react";
+import { useFormContext } from "react-hook-form";
 
 export default function PaymentStep() {
   const {
@@ -23,26 +23,26 @@ export default function PaymentStep() {
   } = useFormContext();
 
   const [uploading, setUploading] = useState(false);
-  const [uploadError, setUploadError] = useState('');
+  const [uploadError, setUploadError] = useState("");
 
-  const attachments = watch('attachments') || [];
+  const attachments = watch("attachments") || [];
 
   const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploading(true);
-    setUploadError('');
+    setUploadError("");
 
     const formData = new FormData();
-    formData.append('file', file);
-    formData.append('upload_preset', 'invoice'); // ✅ your preset
+    formData.append("file", file);
+    formData.append("upload_preset", "invoice"); // ✅ your preset
 
     try {
       const res = await fetch(
-        'https://api.cloudinary.com/v1_1/dbjueuler/upload',
+        "https://api.cloudinary.com/v1_1/dbjueuler/upload",
         {
-          method: 'POST',
+          method: "POST",
           body: formData,
         }
       );
@@ -50,15 +50,15 @@ export default function PaymentStep() {
       const data = await res.json();
 
       if (data.secure_url) {
-        setValue('attachments', [...attachments, data.secure_url], {
+        setValue("attachments", [...attachments, data.secure_url], {
           shouldValidate: true,
         });
       } else {
-        setUploadError('Upload failed. Please try again.');
+        setUploadError("Upload failed. Please try again.");
       }
     } catch (err) {
       console.error(err);
-      setUploadError('An error occurred during upload.');
+      setUploadError("An error occurred during upload.");
     }
 
     setUploading(false);
@@ -66,28 +66,27 @@ export default function PaymentStep() {
 
   const handleRemove = (urlToRemove) => {
     const filtered = attachments.filter((url) => url !== urlToRemove);
-    setValue('attachments', filtered, { shouldValidate: true });
+    setValue("attachments", filtered, { shouldValidate: true });
   };
 
   return (
     <Box>
       <Typography variant="h6" gutterBottom>
-        Payment Terms & Attachments
+        Payment Methods & Attachments
       </Typography>
 
-      {/* Payment Terms */}
       <TextField
         select
-        label="Payment Terms"
+        label="Payment Method"
         fullWidth
         margin="normal"
-        {...register('payment.terms')}
-        error={!!errors.payment?.terms}
-        helperText={errors.payment?.terms?.message}
+        {...register("payment.method")}
+        error={!!errors.payment?.method}
+        helperText={errors.payment?.method?.message}
       >
-        {['Net 7', 'Net 15', 'Net 30'].map((term) => (
-          <MenuItem key={term} value={term}>
-            {term}
+        {["Cash", "Credit Card", "Bank Transfer", "PayPal"].map((method) => (
+          <MenuItem key={method} value={method}>
+            {method}
           </MenuItem>
         ))}
       </TextField>
@@ -98,9 +97,9 @@ export default function PaymentStep() {
           component="label"
           variant="outlined"
           disabled={uploading}
-          sx={{ textTransform: 'none' }}
+          sx={{ textTransform: "none" }}
         >
-          {uploading ? <CircularProgress size={20} /> : 'Upload PDF/Image'}
+          {uploading ? <CircularProgress size={20} /> : "Upload PDF/Image"}
           <input
             type="file"
             hidden
@@ -119,8 +118,8 @@ export default function PaymentStep() {
       {attachments.length > 0 && (
         <Stack direction="row" spacing={1} mt={2} flexWrap="wrap">
           {attachments.map((url) => {
-            const filename = url.split('/').pop();
-            const isPdf = url.includes('.pdf');
+            const filename = url.split("/").pop();
+            const isPdf = url.includes(".pdf");
 
             return (
               <Chip
@@ -131,13 +130,17 @@ export default function PaymentStep() {
                     target="_blank"
                     rel="noopener noreferrer"
                     underline="hover"
-                    sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}
+                    sx={{
+                      maxWidth: 200,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                    }}
                   >
                     {filename}
                   </Link>
                 }
                 onDelete={() => handleRemove(url)}
-                color={isPdf ? 'default' : 'primary'}
+                color={isPdf ? "default" : "primary"}
                 variant="outlined"
                 sx={{ mb: 1 }}
               />
