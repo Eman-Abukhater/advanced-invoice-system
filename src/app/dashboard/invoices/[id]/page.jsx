@@ -7,7 +7,8 @@ import InvoicePreview from "@/components/invoice/InvoicePreview";
 import ActivityLog from "@/components/invoice/ActivityLog";
 import StatusTracker from "@/components/invoice/StatusTracker";
 import PrintButton from "@/components/invoice/PrintButton";
-import dayjs from "dayjs"; 
+import dayjs from "dayjs";
+import { useRouter } from "next/navigation";
 
 import {
   Box,
@@ -16,11 +17,13 @@ import {
   Paper,
   Divider,
   Skeleton,
+  Button,
 } from "@mui/material";
 
 export default function InvoiceDetailPage() {
   const { id } = useParams();
   const [invoice, setInvoice] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
     if (!id) return;
@@ -103,6 +106,14 @@ export default function InvoiceDetailPage() {
         <Divider sx={{ mb: 2 }} />
         <ActivityLog invoice={invoice} />
       </Paper>
+      <Button
+        variant="contained"
+        color="primary"
+        sx={{ my: 2 }}
+        onClick={() => router.push(`/dashboard/invoices/${id}/edit`)}
+      >
+        Edit
+      </Button>
     </Container>
   );
 }
