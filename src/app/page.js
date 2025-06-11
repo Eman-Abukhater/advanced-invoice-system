@@ -7,13 +7,9 @@ export default function Home() {
   return (
     <Container maxWidth="md" sx={{ mt: 8 }}>
       <Box textAlign="center" mb={6}>
-        <Image
-          alt="Invoice Management System"
-          width={100}
-          height={100}
-        />
+        
         <Typography variant="h3" fontWeight="bold" gutterBottom>
-          Welcome to InvoiceMate
+          Welcome to Our Advanced Invoice System
         </Typography>
         <Typography variant="h6" color="text.secondary">
           Streamline your invoicing process with ease. Track, manage, and get paid on time.
@@ -31,18 +27,7 @@ export default function Home() {
             Get Started
           </Button>
         </Grid>
-        <Grid item>
-          <Button
-            variant="outlined"
-            color="secondary"
-            href="https://your-docs-link.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            size="large"
-          >
-            Read Documentation
-          </Button>
-        </Grid>
+      
       </Grid>
 
       <Box mt={10} textAlign="center">
