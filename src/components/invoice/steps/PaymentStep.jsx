@@ -9,12 +9,19 @@ import {
   Chip,
   Stack,
   CircularProgress,
+  Link,
 } from '@mui/material';
 import { useState } from 'react';
 import { useFormContext } from 'react-hook-form';
 
 export default function PaymentStep() {
-  const { register, setValue, watch, formState: { errors } } = useFormContext();
+  const {
+    register,
+    setValue,
+    watch,
+    formState: { errors },
+  } = useFormContext();
+
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
 
@@ -29,23 +36,29 @@ export default function PaymentStep() {
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', 'invoice');
+    formData.append('upload_preset', 'invoice'); // ✅ your preset
 
     try {
-      const res = await fetch('https://api.cloudinary.com/v1_1/dbjueuler/upload', {
-        method: 'POST',
-        body: formData,
-      });
+      const res = await fetch(
+        'https://api.cloudinary.com/v1_1/dbjueuler/upload',
+        {
+          method: 'POST',
+          body: formData,
+        }
+      );
 
       const data = await res.json();
 
       if (data.secure_url) {
-        setValue('attachments', [...attachments, data.secure_url]);
+        setValue('attachments', [...attachments, data.secure_url], {
+          shouldValidate: true,
+        });
       } else {
         setUploadError('Upload failed. Please try again.');
       }
     } catch (err) {
-      setUploadError('Upload error.');
+      console.error(err);
+      setUploadError('An error occurred during upload.');
     }
 
     setUploading(false);
@@ -53,7 +66,7 @@ export default function PaymentStep() {
 
   const handleRemove = (urlToRemove) => {
     const filtered = attachments.filter((url) => url !== urlToRemove);
-    setValue('attachments', filtered);
+    setValue('attachments', filtered, { shouldValidate: true });
   };
 
   return (
@@ -62,6 +75,7 @@ export default function PaymentStep() {
         Payment Terms & Attachments
       </Typography>
 
+      {/* Payment Terms */}
       <TextField
         select
         label="Payment Terms"
@@ -78,26 +92,57 @@ export default function PaymentStep() {
         ))}
       </TextField>
 
+      {/* Upload Button */}
       <Box mt={3}>
-        <Button component="label" variant="outlined" disabled={uploading}>
+        <Button
+          component="label"
+          variant="outlined"
+          disabled={uploading}
+          sx={{ textTransform: 'none' }}
+        >
           {uploading ? <CircularProgress size={20} /> : 'Upload PDF/Image'}
-          <input type="file" hidden accept="image/*,application/pdf" onChange={handleFileChange} />
+          <input
+            type="file"
+            hidden
+            accept="image/*,application/pdf"
+            onChange={handleFileChange}
+          />
         </Button>
-        {uploadError && <Typography color="error" mt={1}>{uploadError}</Typography>}
+        {uploadError && (
+          <Typography color="error" mt={1}>
+            {uploadError}
+          </Typography>
+        )}
       </Box>
 
+      {/* Uploaded Files */}
       {attachments.length > 0 && (
         <Stack direction="row" spacing={1} mt={2} flexWrap="wrap">
-          {attachments.map((url) => (
-            <Chip
-              key={url}
-              label={url.split('/').pop()}
-              onDelete={() => handleRemove(url)}
-              color="primary"
-              variant="outlined"
-              sx={{ mb: 1 }}
-            />
-          ))}
+          {attachments.map((url) => {
+            const filename = url.split('/').pop();
+            const isPdf = url.includes('.pdf');
+
+            return (
+              <Chip
+                key={url}
+                label={
+                  <Link
+                    href={url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    underline="hover"
+                    sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}
+                  >
+                    {filename}
+                  </Link>
+                }
+                onDelete={() => handleRemove(url)}
+                color={isPdf ? 'default' : 'primary'}
+                variant="outlined"
+                sx={{ mb: 1 }}
+              />
+            );
+          })}
         </Stack>
       )}
     </Box>
