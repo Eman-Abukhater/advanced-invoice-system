@@ -27,6 +27,7 @@ import {
 } from "@/lib/mockAPI";
 import { exportInvoicesToCSV, exportInvoicesToPDF } from "@/lib/exportUtils";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
+import { useSession } from "next-auth/react";
 
 const InvoicePage = () => {
   const [filters, setFilters] = useState({
@@ -38,6 +39,8 @@ const InvoicePage = () => {
     paymentMethod: "",
     status: "",
   });
+  const { data: session } = useSession();
+  const role = session?.user?.role;
 
   const queryClient = useQueryClient();
   const [selected, setSelected] = useState([]);
@@ -125,9 +128,10 @@ const InvoicePage = () => {
     const matchesMaxAmount = !maxAmount || inv.amount <= parseFloat(maxAmount);
 
     const matchesDueDateFrom =
-      !dueDateFrom || dayjs(inv.dueDate).isAfter(dayjs(dueDateFrom).subtract(1, 'day'));
+      !dueDateFrom ||
+      dayjs(inv.dueDate).isAfter(dayjs(dueDateFrom).subtract(1, "day"));
     const matchesDueDateTo =
-      !dueDateTo || dayjs(inv.dueDate).isBefore(dayjs(dueDateTo).add(1, 'day'));
+      !dueDateTo || dayjs(inv.dueDate).isBefore(dayjs(dueDateTo).add(1, "day"));
 
     const matchesPaymentMethod =
       !paymentMethod || inv.paymentMethod === paymentMethod;
@@ -261,7 +265,7 @@ const InvoicePage = () => {
             variant="contained"
             color="success"
             onClick={() => markAsPaid.mutate(selected)}
-            disabled={selected.length === 0}
+            disabled={selected.length === 0 || role !== "accountant"}
           >
             Mark as Paid
           </Button>
@@ -271,11 +275,12 @@ const InvoicePage = () => {
             variant="contained"
             color="error"
             onClick={() => deleteInvs.mutate(selected)}
-            disabled={selected.length === 0}
+            disabled={selected.length === 0 || role === "viewer"}
           >
             Delete
           </Button>
         </Grid>
+
         <Grid item>
           <Button
             variant="outlined"
