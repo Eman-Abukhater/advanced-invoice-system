@@ -9,6 +9,7 @@ import StatusTracker from "@/components/invoice/StatusTracker";
 import PrintButton from "@/components/invoice/PrintButton";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 import {
   Box,
@@ -24,6 +25,11 @@ export default function InvoiceDetailPage() {
   const { id } = useParams();
   const [invoice, setInvoice] = useState(null);
   const router = useRouter();
+  const { data: session, status } = useSession();
+
+  const userRole = session?.user?.role;
+  // Show Edit button only if userRole is "admin" or "accountant"
+  const canEdit = userRole === "admin" || userRole === "accountant";
 
   useEffect(() => {
     if (!id) return;
@@ -46,7 +52,15 @@ export default function InvoiceDetailPage() {
       }
     });
   }, [id]);
-
+  if (status === "loading") {
+    return (
+      <Container maxWidth="md" sx={{ py: 6 }}>
+        <Skeleton height={40} width="40%" />
+        <Skeleton height={200} sx={{ my: 2 }} />
+        <Skeleton height={150} />
+      </Container>
+    );
+  }
   if (!invoice) {
     return (
       <Container maxWidth="md" sx={{ py: 6 }}>
@@ -106,14 +120,17 @@ export default function InvoiceDetailPage() {
         <Divider sx={{ mb: 2 }} />
         <ActivityLog invoice={invoice} />
       </Paper>
-      <Button
-        variant="contained"
-        color="primary"
-        sx={{ my: 2 }}
-        onClick={() => router.push(`/dashboard/invoices/${id}/edit`)}
-      >
-        Edit
-      </Button>
+
+      {canEdit && (
+        <Button
+          variant="contained"
+          color="primary"
+          sx={{ my: 2 }}
+          onClick={() => router.push(`/dashboard/invoices/${id}/edit`)}
+        >
+          Edit
+        </Button>
+      )}
     </Container>
   );
 }
