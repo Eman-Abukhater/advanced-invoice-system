@@ -178,3 +178,20 @@ export const deleteInvoices = (ids) =>
         invoices = invoices.filter((inv) => !ids.includes(inv.id));
         setTimeout(() => resolve(true), 400);
     });
+
+    export const createInvoice = (invoice) =>
+      new Promise((resolve) => {
+        const newInvoice = {
+          ...invoice,
+          id: invoices.length + 1, // Simple ID generation
+          createdBy: "admin",
+          createdAt: new Date().toISOString(),
+          updatedBy: "admin",
+          updatedAt: new Date().toISOString(),
+          status: "Draft",
+          sentAt: null,
+        };
+        invoices.push(newInvoice);
+        setTimeout(() => resolve(newInvoice), 400);
+      });
+    
