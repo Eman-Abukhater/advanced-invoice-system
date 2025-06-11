@@ -14,12 +14,12 @@ import {
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { toast, ToastContainer } from "react-toastify";
-
 import ClientInfoStep from "./steps/ClientInfoStep";
 import ItemsStep from "./steps/ItemsStep";
 import PaymentStep from "./steps/PaymentStep";
 import QrCodeSection from "./QrCodeSection";
-
+import { useSession } from "next-auth/react";
+import { createInvoice } from "@/lib/mockAPI";
 const steps = ["Client Info", "Items", "Payment & Upload"];
 
 const defaultValues = {
@@ -71,6 +71,7 @@ export default function InvoiceForm({ mode = "create", initialData = null }) {
   });
 
   const { trigger, getValues } = methods;
+  const { data: session } = useSession();
 
   const handleNext = async () => {
     const isValid = await trigger();
