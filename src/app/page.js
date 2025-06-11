@@ -8,7 +8,6 @@ export default function Home() {
     <Container maxWidth="md" sx={{ mt: 8 }}>
       <Box textAlign="center" mb={6}>
         <Image
-          src="/logo.svg" // Replace with your system logo
           alt="Invoice Management System"
           width={100}
           height={100}
